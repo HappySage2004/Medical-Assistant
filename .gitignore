@@ -1,0 +1,11 @@
+# Ignore local environment files
+.env
+
+# Ignore virtual environment folder
+my_env/
+
+# Ignore Python cache and build files
+__pycache__/
+*.pyc
+/dist
+/build
