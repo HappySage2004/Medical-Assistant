@@ -1,44 +1,3 @@
-# import os
-# from google import genai
-# from google.genai.errors import APIError
-
-# class GeminiClient:
-
-#     def __init__(self, api_key=None):
-#         key = api_key or os.getenv("GEMINI_API_KEY")
-#         if not key:
-#             raise ValueError("API key must be provided or set in the GEMINI_API_KEY environment variable.")
-
-#         # Initializing the client
-#         self.client = genai.Client(api_key=key)
-
-
-#     def get_response(self, query: str) -> str:
-#         """
-#         Generates content from the Gemini model based on a user query.
-#         Args:
-#             query: The prompt to send to the model.
-#         Returns:
-#             The model's text response, or an error message if the call fails.
-#         """
-            
-#         try:
-#             response = self.client.models.generate_content(
-#                 model="gemini-2.5-flash-lite",
-#                 contents=query,
-#             )
-
-#             return response.text
-
-#         except APIError as e:
-#             # Handle specific API errors (e.g., invalid key, rate limiting)
-#             print(f"Gemini API Error: {e}")
-#             return f"An API error occurred {e}"
-#         except Exception as e:
-#             # Handle unexpected errors
-#             print(f"An unexpected error occurred: {e}")
-#             return "An unexpected error occurred while generating the response."
-
 import os
 from google import genai
 from google.genai.errors import APIError
@@ -58,30 +17,27 @@ class GeminiClient:
         self.model = model
 
 
-    def _prepare_image_part(self, image):
-        """
-        Internal helper to prepare an image part for the Gemini API.
-        Accepts either a file path (str) or a dict with {data, mime_type}.
-        """
-        if isinstance(image, str):
-            # assume it's a local file path
-            mime_type = "image/jpeg" if image.lower().endswith(("jpg", "jpeg")) else "image/png"
-            with open(image, "rb") as f:
-                data = f.read()
-            return {"inline_data": {"mime_type": mime_type, "data": data}}
+    def _prepare_media_part(self, file_path):
+        ext = file_path.lower().split(".")[-1]
+        mime_map = {
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg",
+            "png": "image/png",
+            "mp3": "audio/mpeg",
+            "wav": "audio/wav",
+            "ogg": "audio/ogg",
+        }
+        mime_type = mime_map.get(ext, None)
+        if not mime_type:
+            raise ValueError(f"Unsupported file type: {ext}")
+        
+        with open(file_path, "rb") as f:
+            data = f.read()
 
-        elif isinstance(image, dict) and "data" in image:
-            # already a base64 or raw binary dict
-            return {"inline_data": {
-                "mime_type": image.get("mime_type", "image/jpeg"),
-                "data": image["data"],
-            }}
-
-        else:
-            raise ValueError("Invalid image format. Must be a file path or dict with 'data' and 'mime_type'.")
+        return {"inline_data": {"mime_type": mime_type, "data": data}}
 
 
-    def get_response(self, query: str, images=None) -> str:
+    def get_response(self, query: str, images=None, audio=None) -> str:
         """
         Generates content from the Gemini model based on text and optional image inputs.
         Args:
@@ -100,7 +56,14 @@ class GeminiClient:
                 if not isinstance(images, list):
                     images = [images]
                 for img in images:
-                    parts.append(self._prepare_image_part(img))
+                    parts.append(self._prepare_media_part(img))
+
+            # Add audio parts if provided
+            if audio:
+                if not isinstance(audio, list):
+                    audio = [audio]
+                for ad in audio:
+                    parts.append(self._prepare_media_part(ad))
 
             response = self.client.models.generate_content(
                 model=self.model,

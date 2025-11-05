@@ -5,12 +5,17 @@ import os, time
 from custom_llm_services.gemini_llm_service import GeminiClient
 from custom_llm_services.deepseekv3_llm_service import DeepseekClient
 
+from video_processor import extract_video_context
+
 import crewai
 from crewai import Agent, Task, Crew
 
 gemini = GeminiClient()
 start = time.time()
-result = gemini.get_response("Describe what you see in this image.", images="images/download2.jpg")
+frames, audio = extract_video_context("videos/video1.mp4")
+result = gemini.get_response( query="Describe what you see in this video.", 
+                              images= frames,
+                              audio = audio )
 end = time.time()
 print("Time taken to get response : ", end-start, "s")
 print(result)

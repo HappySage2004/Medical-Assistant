@@ -3,6 +3,7 @@
 
 # Ignore virtual environment folder
 my_env/
+gemini_video/
 
 # Ignore Python cache and build files
 __pycache__/
