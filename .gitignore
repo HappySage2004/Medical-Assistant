@@ -1,7 +1,7 @@
 # Ignore local environment files
 .env
 
-# Ignore virtual environment folder
+# Ignore folders
 my_env/
 gemini_video/
 

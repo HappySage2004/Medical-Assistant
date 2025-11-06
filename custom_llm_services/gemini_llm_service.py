@@ -1,7 +1,6 @@
 import os
 from google import genai
 from google.genai.errors import APIError
-from base64 import b64encode
 
 class GeminiClient:
     """
@@ -41,8 +40,9 @@ class GeminiClient:
         """
         Generates content from the Gemini model based on text and optional image inputs.
         Args:
-            query: Text prompt to send to the model.
-            images: Optional list of image file paths or base64 dicts.
+            query  : Text prompt to send to the model.
+            images : Optional list of image file paths or base64 dicts.
+            audio  : Individual audio files or soundtracks from videos.
         Returns:
             Model's textual response.
         """
