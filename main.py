@@ -9,7 +9,7 @@ from video_processor import extract_video_context
 
 import crewai
 from crewai import Agent, Task, Crew
-from crewai_tools import SerperDevTool, WebsiteSearchTool
+from crewai_tools import SerperDevTool, WebsiteSearchTool, RagTool
 
 
 # gemini = GeminiClient()
@@ -24,9 +24,11 @@ from crewai_tools import SerperDevTool, WebsiteSearchTool
 
 
 gemini_llm = crewai.LLM(model="gemini/gemini-2.5-flash", temperature=0.3)
-deepseek_llm = crewai.LLM(model="nvidia_nim/deepseek-ai/deepseek-r1", temperature=0.2)
+azureopenai_llm = crewai.LLM(model="azure/Team24-GPT-4.1-nano-261100a543eaa0de3aa4", temperature=0.2,
+                             api_key = os.getenv("AZURE_OPENAI_API_KEY"),
+                             endpoint = os.getenv("AZURE_ENDPOINT"),
+                             api_version = os.getenv("AZURE_API_VERSION"))
 
-deepseek_llm.call("What's a quadratic equation?")
 
 agent = Agent(
     role = "Shopping Assistant",
@@ -46,7 +48,35 @@ task = Task(
     agent=agent,
 )
 
-# crew = Crew(agents=[agent], tasks=[task])
+crew = Crew(agents=[agent], tasks=[task])
+start = time.time()
+result = crew.kickoff()
+end = time.time()
+print("Time taken to get response : ", end-start, "s")
+print(result.raw)
+
+# from vector_store import index_content_gemini
+# rag_tool = index_content_gemini(" ")
+# rag_tool.add("My name is Aaryan. I am a Data Scientist as Accordion. \
+#               B.Tech from IIT KGP in mining engineering.")
+
+# agent1 = Agent(
+#                 role = "Lead Generator",
+#                 goal = "Find people from particualr professions whom I can target \
+#                         to sell my products.",
+#                 backstory = "",
+#                 tool = [rag_tool],
+#                 llm = gemini_llm,
+#                 verbose = True
+#               )
+
+# task1 = Task(
+#                 description = "Find details of people whom I can sell my data science course",
+#                 expected_output = "All avaialable details of a person in points",
+#                 agent = agent1
+#             )
+
+# crew = Crew(agents=[agent1], tasks=[task1])
 # start = time.time()
 # result = crew.kickoff()
 # end = time.time()
