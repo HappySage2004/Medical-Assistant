@@ -1,17 +1,28 @@
-from langchain_nvidia_ai_endpoints import ChatNVIDIA
+import os
 
-client = ChatNVIDIA(
+from dotenv import load_dotenv
+load_dotenv()
+
+from openai import OpenAI
+
+client = OpenAI(
+  base_url = "https://integrate.api.nvidia.com/v1",
+  api_key = os.getenv("NVIDIA_NIM_API_KEY")
+)
+
+completion = client.chat.completions.create(
   model="deepseek-ai/deepseek-v3.1",
-  api_key="$API_KEY_REQUIRED_IF_EXECUTING_OUTSIDE_NGC", 
+  messages=[{"role":"user","content":""}],
   temperature=0.2,
   top_p=0.7,
   max_tokens=8192,
   extra_body={"chat_template_kwargs": {"thinking":True}},
+  stream=True
 )
 
-for chunk in client.stream([{"role":"user","content":""}]):
-  
-    if chunk.additional_kwargs and "reasoning_content" in chunk.additional_kwargs:
-      print(chunk.additional_kwargs["reasoning_content"], end="")
-  
-    print(chunk.content, end="")
+for chunk in completion:
+  reasoning = getattr(chunk.choices[0].delta, "reasoning_content", None)
+  if reasoning:
+    print(reasoning, end="")
+  if chunk.choices[0].delta.content is not None:
+    print(chunk.choices[0].delta.content, end="")
