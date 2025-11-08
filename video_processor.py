@@ -3,13 +3,13 @@ import os
 from datetime import datetime
 from moviepy import VideoFileClip
 
-def extract_video_context(video_path, num_frames=5):
+def extract_video_context(video_path, client:str, num_frames=5):
     """
     Extracts N evenly spaced frames and the full audio track from a video file.
     Returns (frame_paths, audio_path)
     """
     # --- 1. Create output folder (absolute path) ---
-    base_dir = os.path.join(os.getcwd(), "gemini_video")
+    base_dir = os.path.join(os.getcwd(), f"{client}_video")
     os.makedirs(base_dir, exist_ok=True)
 
     # create a subfolder per video for uniqueness

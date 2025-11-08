@@ -14,7 +14,7 @@ from crewai_tools import SerperDevTool, WebsiteSearchTool, RagTool
 
 gemini = GeminiClient()
 start = time.time()
-frames, audio = extract_video_context("videos/video1.mp4")
+frames, audio = extract_video_context("videos/video1.mp4", "gemini")
 result = gemini.get_response( query="Describe what you see in this video.", 
                               images= frames,
                               audio = audio )
@@ -26,7 +26,7 @@ print("="*100)
 
 gpt_nano = AzureOpenAIClient()
 start = time.time()
-frames, audio = extract_video_context("videos/video1.mp4")
+frames, audio = extract_video_context("videos/video1.mp4" ,"azure")
 result = gpt_nano.get_response( query="Describe what you see in this video.", 
                               images= frames,
                               audio = audio )
