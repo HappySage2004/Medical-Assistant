@@ -6,7 +6,7 @@ from base64 import b64encode
 
 class AzureOpenAIClient:
     """
-    Wrapper for Azure OpenAI GPT-4.1 (Nano/Preview) that supports text, image, and audio inputs.
+    Wrapper for Azure OpenAI GPT-4.1 (Mini/Preview) that supports text, image, and audio inputs.
     Mirrors GeminiClient’s interface exactly.
     """
 
