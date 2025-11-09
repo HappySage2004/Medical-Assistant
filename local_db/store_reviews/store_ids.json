@@ -1,0 +1,17 @@
+{
+    "Store1" : {"address" : "Harrow Manorway, Abbey Wood, London SE2 9NU, United Kingdom",
+                "place_id": "ChIJyaHE5hSv2EcR4nfs6l5mhcc",
+                "data_id" : "0x47d8af14e6c4a1c9:0xc785665eeaec77e2"},
+    "Store2" : {"address" : "158a Cromwell Rd, London SW7 4EJ, United Kingdom",
+                "place_id": "ChIJxYfXiV8FdkgRBpYr6sKIgXM",
+                "data_id" : "0x4876055f89d787c5:0x738188c2ea2b9606"},
+    "Store3" : {"address" : "31-41 Liverpool Rd, London N1 0RW, United Kingdom",
+                "place_id": "ChIJL3WhwkIbdkgRSO5e4ensfQc",
+                "data_id" : "0x48761b42c2a1752f:0x77dece9e15eee48"},
+    "Store4" : {"address" : "19 Selly Oak Shopping Park, Aston Webb Blvd, Birmingham B29 6SJ, United Kingdom",
+                "place_id": "ChIJ8bs0HNC9cEgRNgfjrSqECuM",
+                "data_id" : "0x4870bdd01c34bbf1:0xe30a842aade30736"},
+    "Store5" : {"address" : "Freeth St, Oldbury B69 3DB, United Kingdom",
+                "place_id": "ChIJ5WkfK46XcEgRldnfZXQk6zM",
+                "data_id" : "0x4870978e2b1f69e5:0x33eb247465dfd995"}
+}

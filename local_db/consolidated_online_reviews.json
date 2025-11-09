@@ -1,0 +1,17 @@
+{
+    "Store1": {
+                "insights_para": "The reviews for the store present a mixed picture with notable strengths and weaknesses. Many customers appreciate the store's spaciousness, cleanliness, and well-stocked shelves, highlighting a wide variety of products including food, clothing, and household items. Staff behavior receives polarized feedback; while some customers praise friendly and helpful employees, others report rude and aggressive interactions, especially at tills and with security personnel. Cleanliness is generally seen as good inside the store, but the toilets are frequently criticized for poor hygiene and unpleasant odors. Parking is available beneath the store, which is convenient for many, but several reviews mention difficulties finding parking spaces due to usage by nearby train station commuters. The store's location near public transport is a plus. Queues and waiting times are not a major complaint, but early closing of tills and entrances before official closing time frustrate some shoppers. Product availability is mostly satisfactory, though some customers find it hard to locate items due to store reorganization and limited staff assistance on the floor. Discount offers, particularly the Nectar card system, receive mixed reactions; some appreciate the savings, while others dislike the requirement to have the card for normal prices. Overall, the sentiment is divided but leans slightly toward negative due to staff behavior and facility maintenance issues.",
+                "improvements_para": "To enhance customer experience, the store should prioritize improving staff training focused on customer service and communication skills to reduce incidents of rudeness and aggression. Security protocols need revision to ensure respectful and rational treatment of customers, especially families and non-native English speakers. Addressing cleanliness issues, particularly in the toilets, is critical to improving overall store hygiene perception. Maintenance of escalators, lifts, and refrigeration units must be expedited to avoid prolonged inconvenience. Parking management could be improved by coordinating with local authorities or implementing measures to prevent commuters from occupying spaces meant for shoppers. Increasing the number of floor staff dedicated to customer support would help shoppers find products more easily and reduce frustration caused by store reorganization. Extending till operation hours and keeping entrances open until closing time would improve convenience. Regarding discounts, clearer communication about the Nectar card benefits and possibly offering more inclusive pricing options could enhance customer satisfaction. Finally, better management of click-and-collect orders to prevent long waits and frozen item thawing would improve service reliability. These steps would collectively foster a more welcoming, efficient, and customer-friendly environment.",
+                "Cleanliness_score": "2",
+                "Staff_behaviour_score": "2",
+                "Product_availability_score": "4",
+                "Parking_score": "3",
+                "Discount": "3",
+                "overall_sentiment": "negative"
+              },
+    "Store2": {},
+    "Store3": {},
+    "Store4": {},
+    "Store5": {}
+
+}
