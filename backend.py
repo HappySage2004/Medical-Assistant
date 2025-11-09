@@ -23,12 +23,12 @@ def read_root():
 def read_root():
     return {
         "stores":  [
-    {"id": "Store1", "name": "Store 1"},
-    {"id": "Store2", "name": "Store 2"},
-    {"id": "Store3", "name": "Store 3"},
-    {"id": "Store4", "name": "Store 4"},
-    {"id": "Store5", "name": "Store 5"},
-]
+                    {"id": "Store1", "name": "Store 1"},
+                    {"id": "Store2", "name": "Store 2"},
+                    {"id": "Store3", "name": "Store 3"},
+                    {"id": "Store4", "name": "Store 4"},
+                    {"id": "Store5", "name": "Store 5"},
+                   ]
     }
 
 @app.post(app_version + "/fetch_mi_for_oniline_reveiws", status_code=200)
@@ -43,7 +43,7 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
     agent = Agent(
         role = "Online Review Analyzer",
         goal = "Your goal is to analyze reviews of a given store and provide insights on them. \
-                Provide a single paragraph of insights(about 200 words) and another paragraph on improvement suggestions(about 200 words). \
+                Provide a single paragraph of insights(about 100 words) and another paragraph on improvement suggestions(about 100 words). \
                 While writing the insights focus mainly on parameters like Staff Behaviour, Cleanliness, Queues(waiting time), \
                 product availability, ease of finding desired items, parking, and Discount offers (like nectar card). \
                 You also need to provide an overall sentiment score that combines the effect of the individual parameters.",
@@ -53,7 +53,7 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
     )
 
     task = Task(
-        description = "Provide a single paragraph of insights(about 200 words) and another paragraph on improvement suggestions(about 200 words). \
+        description = "Provide a single paragraph of insights(about 100 words) and another paragraph on improvement suggestions(about 100 words). \
                        While writing the insights focus mainly on parameters like Staff Behaviour, Cleanliness, Queues(waiting time), \
                        product availability, ease of finding desired items, parking, and Discount offers (like nectar card). \
                        You also need to provide an overall sentiment score that combines the effect of the individual parameters.\n \
@@ -62,8 +62,8 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
         expected_output =  '''
                             A JSON structured output containing the answer to each of the asked question.
                             {
-                            "insights_para":"A paragraph (about 200 words) on insights dervied from the reviews",
-                            "improvements_para":"A paragraph (about 200 words) on potential improvements that can be made to improve customer experience",
+                            "insights_para":"A paragraph (about 100 words) on insights dervied from the reviews",
+                            "improvements_para":"A paragraph (about 100 words) on potential improvements that can be made to improve customer experience",
                             "Cleanliness_score":"a single digit score from 1-5 based on how clean the stores are according to the reviews.",
                             "Staff_behaviour_score":"a single digit score from 1-5 based on how well the staff at the store behave with the customers according to the reviews.",
                             "Product_availability_score":"a single digit score from 1-5 based on how satisfied the customers are with the variety of product offerings according to the reviews.",
@@ -302,61 +302,68 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
 
 
 @app.post(app_version + "/user_querying_for_single_store", status_code=200)
-def read_root(store_id:str | None = Body(default=None, convert_underscores=False)):
+def read_root(store_id:str | None = Body(default=None, convert_underscores=False),
+              query:str | None = Body(default=None, convert_underscores=False)):
 
     start = time.time()
+    # Create connection URI
+    db_uri = "mssql+pyodbc://Team_24:No2&5B8B3A0F@MER-SSIS-TRAIN.mipl.com/Agentic_AI_Hackathon?driver=ODBC+Driver+17+for+SQL+Server&autocommit=True"
+    nl2sql = NL2SQLTool(db_uri=db_uri)
+
     azureopenai_llm = crewai.LLM(model="azure/Team24-GPT-4.1-mini-261100a543eaa0de3aa4", temperature=0.2,
                              api_key     =  os.getenv("AZURE_OPENAI_API_KEY"),
                              endpoint    =  os.getenv("AZURE_ENDPOINT"),
                              api_version =  os.getenv("AZURE_API_VERSION"))
 
     agent = Agent(
-        role = "Media Description Analyzer",
-        goal = "Your goal is to analyze image and video descriptions of a given store and provide insights on them. \
-                Provide a single paragraph of insights(about 200 words) and another paragraph on improvement suggestions(about 200 words). \
-                While writing the insights focus mainly on parameters like Staff Behaviour, Cleanliness, Queues(waiting time), \
-                misplaced inventory, and empty shelves. \
-                You also need to provide scores to the parameters from 1-5 with 1 being the worst score and 5 being the best.\
-                You also need to provide an overall sentiment score that combines the effect of the individual parameters.",
-        backstory = "",
+        role = "Retail Store Analyst",
+        goal = "Your goal is to analyze online reviews, image and video descriptions of a given store, and summaries for SQL databases \
+                to answer questions asked by your store manager for {store}. Hence only access data for {store}.\
+                You will have access to the SQL tool to find information not present in the summaries. Use it only when required and not always. \
+                After analyzing all the data prepare a concise answer. Use the NL2SQLTool with the parameter name 'sql_query' to execute the SQL query",
+        backstory = "You are an analyst at the Sainsbury's retail. Your manager can ask you questions about the stores operations and \
+                    continue his duties. You must provide extremely precise to the point answers to the queries and also give some insights if \
+                    are any issues.",
+        tools = [nl2sql],
         llm=azureopenai_llm,
         verbose = True
     )
 
     task = Task(
-        description = "Provide a single paragraph of insights(about 200 words) and another paragraph on improvement suggestions(about 200 words). \
-                       While writing the insights focus mainly on parameters like Staff Behaviour, Cleanliness, Queues(waiting time), \
-                       misplaced inventory, and empty shelves. \
-                       You also need to provide an overall sentiment score that combines the effect of the individual parameters.\n \
-                       IMAGE REVIEWS: \n \
-                       {image_reviews_json} \
-                       VIDEO REVIEWS: \n \
-                       {video_reviews_json}",
-        expected_output =  '''
-                            A JSON structured output containing the answer to each of the asked question.
-                            {
-                            "insights_para":"A paragraph (about 200 words) on insights dervied from the reviews",
-                            "improvements_para":"A paragraph (about 200 words) on potential improvements that can be made to improve customer experience",
-                            "Cleanliness_score":"a single digit score from 1-5 based on how clean the stores are according to the reviews.",
-                            "Staff_behaviour_score":"a single digit score from 1-5 based on how well the staff at the store behave with the customers according to the reviews.",
-                            "Waiting Queue_score":"a single digit score from 1-5 based on how satisfied the customers are with the variety of product offerings according to the reviews.",
-                            "Misplaced_inventory_score":"a single digit score from 1-5 based on how the customers view the parking facility according to the reviews.",
-                            "empty_shelves_score":"a single digit score from 1-5 based on how content the users are with the discounts according to the reviews.",
-                            }
-                            Only return the above JSON block. Do not include any additional explanation or text outside the JSON.
-                            ''',
+        description = "You have access to media insights (store videos and images) online reviews, as well as insights and metrics \
+                       from the SQL database maintained by the store. Frame you answer to the manager's question using these resources.\
+                       in addition you also have access to the SQL database using the SQL tool in case he wants some metrics not in the insights\
+                       Use the tool only when you need extra information and not otherwise. Meticulously follow the instructions mentioned in the user query.\
+                       USER QUESTION: {query} \
+                       MEDIA INSIGHTS:\n\
+                       {media_reviews_json} \
+                       ONLINE REVIEWS:\n\
+                       {online_reviews_json} \
+                       DATABASE METRICS:\n\
+                       {structured_reviews_json}",
+        expected_output =  "A concise answer than can please the Store Manager.",
         agent=agent,
     )
-    with open(f"local_db/image_reviews/{store_id}_image_reviews.json", "r") as f:
-        image_reviews_json = json.load(f)["img_reviews"]
-    with open(f"local_db/video_reviews/{store_id}_video_reviews.json", "r") as f:
-        video_reviews_json = json.load(f)["vid_reviews"]
-    inputs = {"image_reviews_json": str(image_reviews_json), "video_reviews_json": str(video_reviews_json) }
+    with open(f"local_db/consolidated_media_reviews.json", "r") as f:
+        media_reviews_json = json.load(f)[store_id]
+    with open(f"local_db/consolidated_online_reviews.json", "r") as f:
+        online_reviews_json = json.load(f)[store_id]
+    with open(f"local_db/consolidated_structured_output.json", "r") as f:
+        structured_reviews_json = json.load(f)[store_id]
+
+
+    inputs = {  
+                "media_reviews_json": str(media_reviews_json), 
+                "online_reviews_json": str(online_reviews_json),
+                "structured_reviews_json": str(structured_reviews_json),
+                "query" : query,
+                "store": store_id
+             }
     crew = Crew(agents=[agent], tasks=[task])
     
     result = crew.kickoff(inputs= inputs)
     print(result)
-    result = json.loads(str(result))
+    result = {"response" : str(result)}
     end = time.time()
     print("Time taken for response : ", end-start ,"s")
     return JSONResponse(content=result, status_code=200)
@@ -366,61 +373,76 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
 
 
 @app.post(app_version + "/user_querying_for_all_store", status_code=200)
-def read_root(store_id:str | None = Body(default=None, convert_underscores=False)):
+def read_root(query:str | None = Body(default=None, convert_underscores=False)):
 
     start = time.time()
+    # Create connection URI
+    db_uri = "mssql+pyodbc://Team_24:No2&5B8B3A0F@MER-SSIS-TRAIN.mipl.com/Agentic_AI_Hackathon?driver=ODBC+Driver+17+for+SQL+Server&autocommit=True"
+    nl2sql = NL2SQLTool(db_uri=db_uri)
+
     azureopenai_llm = crewai.LLM(model="azure/Team24-GPT-4.1-mini-261100a543eaa0de3aa4", temperature=0.2,
                              api_key     =  os.getenv("AZURE_OPENAI_API_KEY"),
                              endpoint    =  os.getenv("AZURE_ENDPOINT"),
                              api_version =  os.getenv("AZURE_API_VERSION"))
 
     agent = Agent(
-        role = "Media Description Analyzer",
-        goal = "Your goal is to analyze image and video descriptions of a given store and provide insights on them. \
-                Provide a single paragraph of insights(about 200 words) and another paragraph on improvement suggestions(about 200 words). \
-                While writing the insights focus mainly on parameters like Staff Behaviour, Cleanliness, Queues(waiting time), \
-                misplaced inventory, and empty shelves. \
-                You also need to provide scores to the parameters from 1-5 with 1 being the worst score and 5 being the best.\
-                You also need to provide an overall sentiment score that combines the effect of the individual parameters.",
-        backstory = "",
+        role = "Retail Store Analyst",
+        goal = "Your goal is to analyze online reviews, image and video descriptions of a given store, and summaries for SQL databases \
+                to answer questions asked by your store manager. Your store manager is a regional manager as well and hence has access to data from all the stores.\
+                You will have access to the SQL tool to find information not present in the summaries. Use it only when required and not always. \
+                After analyzing all the data prepare a concise answer. Use the NL2SQLTool with the parameter name 'sql_query' to execute the SQL query",
+        backstory = "You are an analyst at the Sainsbury's retail. Your manager can ask you questions about the store's operations and \
+                    continue his duties. You must provide extremely precise to the point answers to the queries and also give some insights if \
+                    are any issues.",
+        tools = [nl2sql],
         llm=azureopenai_llm,
         verbose = True
     )
 
     task = Task(
-        description = "Provide a single paragraph of insights(about 200 words) and another paragraph on improvement suggestions(about 200 words). \
-                       While writing the insights focus mainly on parameters like Staff Behaviour, Cleanliness, Queues(waiting time), \
-                       misplaced inventory, and empty shelves. \
-                       You also need to provide an overall sentiment score that combines the effect of the individual parameters.\n \
-                       IMAGE REVIEWS: \n \
-                       {image_reviews_json} \
-                       VIDEO REVIEWS: \n \
-                       {video_reviews_json}",
-        expected_output =  '''
-                            A JSON structured output containing the answer to each of the asked question.
-                            {
-                            "insights_para":"A paragraph (about 200 words) on insights dervied from the reviews",
-                            "improvements_para":"A paragraph (about 200 words) on potential improvements that can be made to improve customer experience",
-                            "Cleanliness_score":"a single digit score from 1-5 based on how clean the stores are according to the reviews.",
-                            "Staff_behaviour_score":"a single digit score from 1-5 based on how well the staff at the store behave with the customers according to the reviews.",
-                            "Waiting Queue_score":"a single digit score from 1-5 based on how satisfied the customers are with the variety of product offerings according to the reviews.",
-                            "Misplaced_inventory_score":"a single digit score from 1-5 based on how the customers view the parking facility according to the reviews.",
-                            "empty_shelves_score":"a single digit score from 1-5 based on how content the users are with the discounts according to the reviews.",
-                            }
-                            Only return the above JSON block. Do not include any additional explanation or text outside the JSON.
-                            ''',
+        description = "You have access to media insights (store videos and images) online reviews, as well as insights and metrics \
+                       from the SQL database maintained by the store. Frame you answer to the manager's question using these resources.\
+                       in addition you also have access to the SQL database using the SQL tool in case he wants some metrics not in the insights\
+                       Use the tool only when you need extra information and not otherwise. Meticulously follow the instructions mentioned in the user query.\
+                       USER QUESTION: {query} \
+                       MEDIA INSIGHTS:\n\
+                       {media_reviews_json} \
+                       ONLINE REVIEWS:\n\
+                       {online_reviews_json} \
+                       DATABASE METRICS:\n\
+                       {structured_reviews_json}",
+        expected_output =  "A concise answer than can please the Store Manager.",
         agent=agent,
     )
-    with open(f"local_db/image_reviews/{store_id}_image_reviews.json", "r") as f:
-        image_reviews_json = json.load(f)["img_reviews"]
-    with open(f"local_db/video_reviews/{store_id}_video_reviews.json", "r") as f:
-        video_reviews_json = json.load(f)["vid_reviews"]
-    inputs = {"image_reviews_json": str(image_reviews_json), "video_reviews_json": str(video_reviews_json) }
+    with open(f"local_db/consolidated_media_reviews.json", "r") as f:
+        media_reviews_json = json.load(f)
+    with open(f"local_db/consolidated_online_reviews.json", "r") as f:
+        online_reviews_json = json.load(f)
+    with open(f"local_db/consolidated_structured_output.json", "r") as f:
+        structured_reviews_json = json.load(f)
+
+    query = query.replace("'Store 1'", "'Store1'")
+    query = query.replace("'Store 2'", "'Store2'")
+    query = query.replace("'Store 3'", "'Store3'")
+    query = query.replace("'Store 4'", "'Store4'")
+    query = query.replace("'Store 5'", "'Store5'")
+    query = query.replace("'store 1'", "'Store1'")
+    query = query.replace("'store 2'", "'Store2'")
+    query = query.replace("'store 3'", "'Store3'")
+    query = query.replace("'store 4'", "'Store4'")
+    query = query.replace("'store 5'", "'Store5'")
+
+    inputs = {  
+                "media_reviews_json": str(media_reviews_json), 
+                "online_reviews_json": str(online_reviews_json),
+                "structured_reviews_json": str(structured_reviews_json),
+                "query" : query,
+             }
     crew = Crew(agents=[agent], tasks=[task])
     
     result = crew.kickoff(inputs= inputs)
     print(result)
-    result = json.loads(str(result))
+    result = {"response" : str(result)}
     end = time.time()
     print("Time taken for response : ", end-start ,"s")
     return JSONResponse(content=result, status_code=200)

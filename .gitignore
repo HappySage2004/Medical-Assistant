@@ -4,6 +4,8 @@
 # Ignore folders
 my_env/
 gemini_video/
+Images/
+Output_videos/
 
 # Ignore Python cache and build files
 __pycache__/
