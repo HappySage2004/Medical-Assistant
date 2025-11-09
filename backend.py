@@ -9,6 +9,7 @@ import os, time
 import datetime
 import json
 import crewai
+import base64, cv2, mimetypes
 from crewai import Agent, Task, Crew
 from crewai_tools import NL2SQLTool
 
@@ -153,8 +154,29 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
 
 
 @app.post(app_version + "/fetch_store_monitoring", status_code=200)
-def read_root(b64:str | None = Body(default=None, convert_underscores=False)):
+def read_root(file_path:str | None = Body(default=None, convert_underscores=False)):
     start = time.time()
+
+    file_path = "path/to/your/file"
+    ext = os.path.splitext(file_path)[1].lower()
+
+    if ext == ".mp4":
+        cap = cv2.VideoCapture(file_path)
+        success, frame = cap.read()
+        cap.release()
+        if success:
+            _, buffer = cv2.imencode(".jpg", frame)
+            b64_string = base64.b64encode(buffer).decode("utf-8")
+        else:
+            b64_string = None
+    elif ext in [".jpg", ".jpeg", ".png"]:
+        with open(file_path, "rb") as f:
+            b64_string = base64.b64encode(f.read()).decode("utf-8")
+    else:
+        b64_string = None
+    
+    b64 = b64_string[-100:-20:5]
+    print(b64)
     with open(f"local_db/media_index.json", "r") as f:
         media_index_json = json.load(f)
 
