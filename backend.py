@@ -101,7 +101,7 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
     agent = Agent(
         role = "Media Description Analyzer",
         goal = "Your goal is to analyze image and video descriptions of a given store and provide insights on them. \
-                Provide a single paragraph of insights(about 200 words) and another paragraph on improvement suggestions(about 200 words). \
+                Provide a single paragraph of insights(about 100 words) and another paragraph on improvement suggestions(about 100 words). \
                 While writing the insights focus mainly on parameters like Staff Behaviour, Cleanliness, Queues(waiting time), \
                 misplaced inventory, and empty shelves. \
                 You also need to provide scores to the parameters from 1-5 with 1 being the worst score and 5 being the best.\
@@ -112,7 +112,7 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
     )
 
     task = Task(
-        description = "Provide a single paragraph of insights(about 200 words) and another paragraph on improvement suggestions(about 200 words). \
+        description = "Provide a single paragraph of insights(about 100 words) and another paragraph on improvement suggestions(about 100 words). \
                        While writing the insights focus mainly on parameters like Staff Behaviour, Cleanliness, Queues(waiting time), \
                        misplaced inventory, and empty shelves. \
                        You also need to provide an overall sentiment score that combines the effect of the individual parameters.\n \
@@ -123,8 +123,8 @@ def read_root(store_id:str | None = Body(default=None, convert_underscores=False
         expected_output =  '''
                             A JSON structured output containing the answer to each of the asked question.
                             {
-                            "insights_para":"A paragraph (about 200 words) on insights dervied from the reviews",
-                            "improvements_para":"A paragraph (about 200 words) on potential improvements that can be made to improve customer experience",
+                            "insights_para":"A paragraph (about 100 words) on insights dervied from the reviews",
+                            "improvements_para":"A paragraph (about 100 words) on potential improvements that can be made to improve customer experience",
                             "Cleanliness_score":"a single digit score from 1-5 based on how clean the stores are according to the reviews.",
                             "Staff_behaviour_score":"a single digit score from 1-5 based on how well the staff at the store behave with the customers according to the reviews.",
                             "Waiting Queue_score":"a single digit score from 1-5 based on how satisfied the customers are with the variety of product offerings according to the reviews.",
@@ -157,6 +157,8 @@ def read_root(b64:str | None = Body(default=None, convert_underscores=False)):
     start = time.time()
     with open(f"local_db/media_index.json", "r") as f:
         media_index_json = json.load(f)
+
+    isPresent = False
     
     result = {}
     for store in media_index_json:
@@ -167,6 +169,7 @@ def read_root(b64:str | None = Body(default=None, convert_underscores=False)):
                     for imgx in issues:
                         if b64 == imgx["img_id"]:
                             result["issue"] = imgx["issues"]
+                            isPresent = True
         for vid in media_index_json[store]["videos"]:
             if vid == b64:
                 with open(f"local_db/store_alerts/{store}_videos_issues.json", "r") as f2:
@@ -174,6 +177,10 @@ def read_root(b64:str | None = Body(default=None, convert_underscores=False)):
                     for vidx in issues:
                         if b64 == vidx["vid_id"]:
                             result["issue"] = vidx["issues"]
+                            isPresent = True
+
+    if isPresent == False:
+        result["issue"] = "Sorry! this media file is currently not present in our database. Realtime media file processing is not yet implemented"
     end = time.time()
     print("Time taken for response : ", end-start ,"s")
     return JSONResponse(content=result, status_code=200)
@@ -450,3 +457,30 @@ def read_root(query:str | None = Body(default=None, convert_underscores=False)):
 @app.get(app_version + "/items/{item_id}")
 def read_item(item_id: str, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
+
+
+@app.post(app_version + "/consolidated_scorecard", status_code=200)
+def read_root(store_id:str | None = Body(default=None, convert_underscores=False)):
+    start = time.time()
+
+    result = {}
+    with open(f"local_db/consolidated_media_reviews.json", "r") as f:
+        media_reviews_json = json.load(f)[store_id]
+    with open(f"local_db/consolidated_online_reviews.json", "r") as f:
+        online_reviews_json = json.load(f)[store_id]
+    with open(f"local_db/consolidated_structured_output.json", "r") as f:
+        structured_reviews_json = json.load(f)[store_id]
+
+    result["Total Sales"] = str(structured_reviews_json["total sales"])
+    result["MoM sales growth"] = str(structured_reviews_json["MoM sales growth"])
+    result["Average employee rating"] = str(structured_reviews_json["Average employee rating"])
+    result["overall_sentiment"] = str(online_reviews_json["overall_sentiment"])
+    result["Staff_behaviour_score"] = str((int(online_reviews_json["Staff_behaviour_score"]) + int(media_reviews_json["Staff_behaviour_score"]))/2)
+    result["Product_availability_score"] = str(online_reviews_json["Product_availability_score"])
+    result["Cleanliness_score"] = str((int(online_reviews_json["Cleanliness_score"]) + int(media_reviews_json["Cleanliness_score"]))/2)
+    result["Waiting Queue_score"] = str(media_reviews_json["Waiting Queue_score"])
+    result["empty_shelves_score"] = str(media_reviews_json["empty_shelves_score"]) 
+   
+    end = time.time()
+    print("Time taken for response : ", end-start ,"s")
+    return JSONResponse(content=result, status_code=200)

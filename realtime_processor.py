@@ -260,60 +260,61 @@ for store in data:
 
 # ================================ Fetching Store Alerts ===============================================
 
-# import os, time, asyncio
-# import json
-# from base64 import b64encode
-# from pathlib import Path
-# from custom_llm_services.azureopenai_llm_service import AzureOpenAIClient
-# from video_processor import extract_video_context
+import os, time, asyncio
+import json
+from base64 import b64encode
+from pathlib import Path
+from custom_llm_services.azureopenai_llm_service import AzureOpenAIClient
+from video_processor import extract_video_context
 
-# gpt_nano = AzureOpenAIClient()
+def realtime_store_alerts(all_paths = None, type:str = None):
+    gpt_nano = AzureOpenAIClient()
 
-# start = time.time()
-# img_issues = []
-# directory_path = Path('Images\Store 5') 
-# all_paths = [item for item in directory_path.iterdir()]
-# for img in all_paths:
-#     # frames, audio = extract_video_context(str(img) ,"azure")
-#     result = gpt_nano.get_response( query="You are given a Image of a retail store. Analyze the Images carefully and find problems that may require alerts. \
-#                                         In the output give only a list of strings having either one or more elements from the following list : \
-#                                         [empty shelves, spilled aisles, long queues on billing counters, no issues]", 
-#                                     images= str(img))
-                                    
-#     with open(img, "rb") as f:
-#         encoded = b64encode(f.read()).decode("utf-8")
-#         print(encoded[-100:-20:5], end = " || ")
-
-#     img_data = {"img_id": encoded[-100:-20:5],
-#                 "issues" : result}
-#     img_issues.append(img_data)
-    
-# with open(f"local_db/store_alerts/Store5_images_issues.json", 'w') as f:
-#     json.dump(img_issues, f)
-
-# vid_issues = []
-# directory_path = Path('Output_videos') 
-# all_paths = [item for item in directory_path.iterdir()]
-# for vid in all_paths:
-#     list = str(vid).split('-')[0].split('\\')
-#     print(list)
-#     if list[-1] == "Store5":
-#         frames, audio = extract_video_context(str(vid) ,"azure")
-#         result = gpt_nano.get_response( query="You are given a Vido of a retail store. Analyze the frames carefully and find problems that may require alerts. \
-#                                         In the output give only a list of strings having either one or more elements from the following list : \
-#                                         [empty shelves, spilled aisles, long queues on billing counters, no issues]", 
-#                                         images= frames)
+    start = time.time()
+    img_issues = []
+    directory_path = Path('Images\Store 5') 
+    all_paths = [item for item in directory_path.iterdir()]
+    for img in all_paths:
+        # frames, audio = extract_video_context(str(img) ,"azure")
+        result = gpt_nano.get_response( query="You are given a Image of a retail store. Analyze the Images carefully and find problems that may require alerts. \
+                                            In the output give only a list of strings having either one or more elements from the following list : \
+                                            [empty shelves, spilled aisles, long queues on billing counters, no issues]", 
+                                        images= str(img))
                                         
-#         with open(frames[0], "rb") as f:
-#             encoded = b64encode(f.read()).decode("utf-8")
-#             print(encoded[-100:-20:5])
+        with open(img, "rb") as f:
+            encoded = b64encode(f.read()).decode("utf-8")
+            print(encoded[-100:-20:5], end = " || ")
 
-#         vid_data = {"vid_id": encoded[-100:-20:5],
-#                     "issues" : result}
-#         print(vid_data["issues"])
-#         vid_issues.append(vid_data)
-    
-# with open(f"local_db/store_alerts/Store5_videos_issues.json", 'w') as f:
-#     json.dump(vid_issues, f)
-# end = time.time()
-# print("Time taken to get response : ", end-start, "s")
+        img_data = {"img_id": encoded[-100:-20:5],
+                    "issues" : result}
+        img_issues.append(img_data)
+        
+    with open(f"local_db/store_alerts/Store5_images_issues.json", 'w') as f:
+        json.dump(img_issues, f)
+
+    vid_issues = []
+    directory_path = Path('Output_videos') 
+    all_paths = [item for item in directory_path.iterdir()]
+    for vid in all_paths:
+        list = str(vid).split('-')[0].split('\\')
+        print(list)
+        if list[-1] == "Store5":
+            frames, audio = extract_video_context(str(vid) ,"azure")
+            result = gpt_nano.get_response( query="You are given a Vido of a retail store. Analyze the frames carefully and find problems that may require alerts. \
+                                            In the output give only a list of strings having either one or more elements from the following list : \
+                                            [empty shelves, spilled aisles, long queues on billing counters, no issues]", 
+                                            images= frames)
+                                            
+            with open(frames[0], "rb") as f:
+                encoded = b64encode(f.read()).decode("utf-8")
+                print(encoded[-100:-20:5])
+
+            vid_data = {"vid_id": encoded[-100:-20:5],
+                        "issues" : result}
+            print(vid_data["issues"])
+            vid_issues.append(vid_data)
+        
+    with open(f"local_db/store_alerts/Store5_videos_issues.json", 'w') as f:
+        json.dump(vid_issues, f)
+    end = time.time()
+    print("Time taken to get response : ", end-start, "s")
